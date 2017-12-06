@@ -21,13 +21,18 @@ class Index extends Controller
         $qrcode = $auto_wechat->qrcode($uuid);
         // echo $qrcode;
         // return view();
+        // dump($uuid);
+        $this->assign('uuid', $uuid);
         $this->assign('qrcode', $qrcode);
         return $this->fetch();
     }
 
     public function login(){
     	$auto_wechat = new Autowechat();
-    	$login_return = $auto_wechat->login($this->uuid);
-
+    	$login_return = $auto_wechat->login('wf9rd1j_5w==');
+     //    dump($this->uuid);
+     //    dump($login_return);
+        // $uuid = $_GET['uuid'];
+        return $login_return;
     }
 }

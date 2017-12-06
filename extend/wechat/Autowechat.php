@@ -9,11 +9,6 @@
 
     namespace wechat;
     class Autowechat{
-        function getMillisecond()
-        {
-            list($t1, $t2) = explode(' ', microtime());
-            return $t2 . ceil(($t1 * 1000));
-        }
 
         private $appid = 'wx782c26e4c19acffb';
 
@@ -62,19 +57,28 @@
         {
             $url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?loginicon=' . $icon . '&r=' . ~time() . '&uuid=' . $uuid . '&tip=0&_=' . getMillisecond();
             $content = $this->curlPost($url);
+
             preg_match('/\d+/', $content, $match);
+            // dump($match);
             $code = $match[0];
-            preg_match('/([\'"])([^\'"\.]*?)\1/', $content, $icon);
-            $user_icon = $icon[2];
-            if ($user_icon) {
-                $data = array(
-                    'code' => $code,
-                    'icon' => $user_icon,
-                );
-            } else {
+            
+            if($code != 400){
+
+                preg_match('/([\'"])([^\'"\.]*?)\1/', $content, $icon);
+                dump($content);
+                $user_icon = $icon[2];
+
+                if ($user_icon) {
+                    $data = array(
+                        'code' => $code,
+                        'icon' => $user_icon,
+                    );
+                }    
+            }else {
                 $data['code'] = $code;
             }
-            echo json_encode($data);
+            // echo json_encode($data);
+            return $data;
         }
 
         /**
@@ -415,3 +419,9 @@
         }
 
     }
+
+function getMillisecond()
+        {
+            list($t1, $t2) = explode(' ', microtime());
+            return $t2 . ceil(($t1 * 1000));
+        }

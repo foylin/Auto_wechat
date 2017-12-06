@@ -5,6 +5,82 @@
 	<title>Document</title>
 </head>
 <body>
-	{$qrcode}
+	<div>
+		{$qrcode}
+	
+
+
+	</div>
+
+
+
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script>
+	var time_waitlogin = setInterval("waitlogin()", 3000);
+	var uuid = "{$uuid}";
+
+	function waitlogin(){
+		if(uuid){
+			$.ajax({
+				type: "GET",
+				url: "{:url('/index/index/login')}",
+				data:{
+					'uuid': '{$uuid}'
+				},
+				success: function(data, status){
+					console.log(data);
+					if(data != -1){
+						if(data.code != 400){
+							//登录成功，停止扫描
+							window.clearInterval(time_waitlogin);	
+
+							//获取登录参数（uin、skey、sid、pass_ticket）  存放cookie
+							$.ajax({
+								type: "GET",
+								url: "/admin/index.php?m=extend-getwechatparam",
+								data: {
+									url: data
+								},
+								success: function(data2, status2){
+									console.log(data2);
+
+									//初始化微信
+									if(data != -1){
+										$.ajax({
+											type: "GET",
+											url: "/admin/index.php?m=extend-autowechatinit&r="+ ~new Date(),
+											data:{
+												DeviceID : "e" + ("" + Math.random().toFixed(15)).substring(2, 17)
+											},
+											success: function(data3, status3){
+												console.log(data3);
+												$.ajax({
+													type: "GET",
+													url: "/admin/index.php?m=extend-autowechatnotify&r="+ ~new Date(),
+													data:{
+														DeviceID : "e" + ("" + Math.random().toFixed(15)).substring(2, 17)
+													},
+													success: function(data4, status4){
+														console.log(data3);
+														
+													}
+												})
+											}
+										})
+									}
+									
+								}
+							})
+						}
+						
+
+						
+					}
+				}
+
+			})	
+		}	
+	}
+</script>
 </body>
 </html>
