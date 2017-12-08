@@ -55,17 +55,17 @@
          */
         public function login($uuid, $icon = 'true')
         {
-            $url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?loginicon=' . $icon . '&r=' . ~time() . '&uuid=' . $uuid . '&tip=0&_=' . getMillisecond();
+            $url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?loginicon=' . $icon . '&r=' . ~time() . '&uuid=' . $uuid . '&tip=1&_=' . getMillisecond();
             $content = $this->curlPost($url);
 
             preg_match('/\d+/', $content, $match);
             // dump($match);
             $code = $match[0];
             
-            if($code != 400){
-
+            if($code == 201){
+                // dump($content);
                 preg_match('/([\'"])([^\'"\.]*?)\1/', $content, $icon);
-                dump($content);
+                
                 $user_icon = $icon[2];
 
                 if ($user_icon) {
@@ -73,11 +73,20 @@
                         'code' => $code,
                         'icon' => $user_icon,
                     );
-                }    
+                }   
+            }elseif($code == 200){
+                $content = explode(";", $content);
+                $content = explode("window.redirect_uri=", $content[1]);
+                $uri = str_replace("\"","",$content[1]);
+                if ($uri) {
+                    $data = array(
+                        'code' => $code,
+                        'redirect_uri' => $uri,
+                    );
+                }  
             }else {
                 $data['code'] = $code;
             }
-            // echo json_encode($data);
             return $data;
         }
 
@@ -86,27 +95,29 @@
          * @param $uuid
          * @return array $callback
          */
-        public function get_uri($uuid)
+        public function get_uri($uri)
         {
-            $url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?uuid=' . $uuid . '&tip=0&_=e' . time();
-            $content = $this->curlPost($url);
-            $content = explode(';', $content);
-            $content_uri = explode('"', $content[1]);
-            $uri = $content_uri[1];
+            // $url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?uuid=' . $uuid . '&tip=0&_=e' . time();
+            // $content = $this->curlPost($url);
+            // $content = explode(';', $content);
+            // $content_uri = explode('"', $content[1]);
+            // $uri = $content_uri[1];
 
-            preg_match("~^https:?(//([^/?#]*))?~", $uri, $match);
-            $https_header = $match[0];
-            $post_url_header = $https_header . "/cgi-bin/mmwebwx-bin";
+            // preg_match("~^https:?(//([^/?#]*))?~", $uri, $match);
+            // $https_header = $match[0];
+            // // cookie('https_header', $https_header);
+            // $post_url_header = $https_header . "/cgi-bin/mmwebwx-bin";
 
-            $new_uri = explode('scan', $uri);
-            $uri = $new_uri[0] . 'fun=new&scan=' . time();
+            // $new_uri = explode('scan', $uri);
+
+            $uri = $uri . 'fun=new&version=2';
             $getXML = $this->curlPost($uri);
 
             $XML = simplexml_load_string($getXML);
 
             $callback = array(
-                'post_url_header' => $post_url_header,
-                'Ret' => (array)$XML,
+                // 'post_url_header' => $post_url_header,
+                'Ret' => (array)$XML
             );
             return $callback;
         }
@@ -122,7 +133,8 @@
             $Ret = $callback['Ret'];
             $status = $Ret['ret'];
             if ($status == '1203') {
-                $this->error('未知错误,请2小时后重试');
+                // $this->error('未知错误,请2小时后重试');
+                return $status;
             }
             if ($status == '0') {
                 $post->BaseRequest = array(
@@ -151,8 +163,8 @@
          */
         public function wxinit($post)
         {
-
-            $url = $_SESSION['https_header'] . '/cgi-bin/mmwebwx-bin/webwxinit?pass_ticket=' . $post->pass_ticket . '&skey=' . $post->skey . '&r=' . time();
+            // return $post;
+            $url = 'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit?pass_ticket=' . $post->pass_ticket . '&skey=' . $post->skey . '&r=' . time();
 
             $post = array(
                 'BaseRequest' => $post->BaseRequest,
@@ -169,8 +181,7 @@
          * @param $post_url_header
          * @return array $data
          */
-        public
-        function wxstatusnotify($post, $json, $post_url_header)
+        public function wxstatusnotify($post, $json, $post_url_header)
         {
             $init = json_decode($json, true);
 
