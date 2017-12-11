@@ -29,6 +29,10 @@
 					if(data.code == 408 || data.code == 201){
 						setTimeout("waitlogin()", 3000);
 					}else{
+						// 登录成功  初始化微信
+						wxinit();
+						// 初始化成功
+						// wechat_synccheck();
 						// waitlogin();
 						
 					}
@@ -36,6 +40,25 @@
 
 			})	
 		}	
+	}
+
+	//初始化微信
+	function wxinit(){
+		$.ajax({
+			type: 'GET',
+			url: "{:url('index/index/wxinit')}",
+			data:{
+				'r' : ~new Date
+			},
+			success: function(data){
+				console.log(data);
+			}
+		})
+	}
+
+	// 微信心跳包检测
+	function wechat_synccheck(){
+		
 	}
 </script>
 </body>

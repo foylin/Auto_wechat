@@ -110,7 +110,8 @@
 
             // $new_uri = explode('scan', $uri);
 
-            $uri = $uri . 'fun=new&version=2';
+            $uri = $uri . '&fun=new&version=2';
+            // return $uri;
             $getXML = $this->curlPost($uri);
 
             $XML = simplexml_load_string($getXML);
@@ -161,10 +162,12 @@
          * @param $post
          * @return json $json
          */
-        public function wxinit($post)
+        public function wxinit($post, $r)
         {
             // return $post;
-            $url = 'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit?pass_ticket=' . $post->pass_ticket . '&skey=' . $post->skey . '&r=' . time();
+            $url = 'https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?pass_ticket=' . $post->pass_ticket . '&lang=zh_CN&r=' . $r;
+
+            // file_put_contents('init_url.txt', $url);
 
             $post = array(
                 'BaseRequest' => $post->BaseRequest,
